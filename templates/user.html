@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Página do Usuário</title>
+  </head>
+  <body>
+    <div>
+      <h1>Bem-vindo, {{ email }}!</h1>
+
+      <p>Sua senha (para fins de teste): {{ senha }}</p>
+    </div>
+    <h2>Cadastrar Novo Ponto de Interesse</h2>
+    <form action="/adicionar_ponto" method="post">
+      <label for="lat">Latitude:</label><br />
+      <input type="text" id="lat" name="latitude" required /><br />
+
+      <label for="lon">Longitude:</label><br />
+      <input type="text" id="lon" name="longitude" required /><br />
+
+      <label for="desc">Descrição:</label><br />
+      <input type="text" id="desc" name="descricao" /><br /><br />
+
+      <button type="submit">Salvar Ponto</button>
+    </form>
+
+    <div>
+      <form action="/logout" method="post">
+        <button type="submit">Sair</button>
+      </form>
+    </div>
+  </body>
+</html>
