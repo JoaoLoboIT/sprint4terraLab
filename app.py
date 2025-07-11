@@ -67,3 +67,13 @@ def adicionar_ponto(email):
         return redirect(url_for('mostrar_pagina_usuario', email=usuario.email, senha=usuario.senha))
     
     return render_template('adicionar_ponto.html')
+
+@app.route('/user/<email>/pontos')
+def ver_meus_pontos(email):
+    usuario = User.query.filter_by(email=email).first()
+
+    if not usuario:
+        return "Usuário não encontrado!", 404
+
+    pontos_do_usuario = usuario.pontos
+    return render_template('listar_pontos.html', usuario=usuario, lista_de_pontos=pontos_do_usuario)
