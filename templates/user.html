@@ -9,21 +9,14 @@
     <div>
       <h1>Bem-vindo, {{ email }}!</h1>
 
-      <p>Sua senha (para fins de teste): {{ senha }}</p>
+      <p>
+        <a href="{{ url_for('adicionar_ponto', email=email) }}"
+          >Adicionar Novo Ponto</a
+        >
+      </p>
     </div>
-    <h2>Cadastrar Novo Ponto de Interesse</h2>
-    <form action="/adicionar_ponto" method="post">
-      <label for="lat">Latitude:</label><br />
-      <input type="text" id="lat" name="latitude" required /><br />
 
-      <label for="lon">Longitude:</label><br />
-      <input type="text" id="lon" name="longitude" required /><br />
-
-      <label for="desc">Descrição:</label><br />
-      <input type="text" id="desc" name="descricao" /><br /><br />
-
-      <button type="submit">Salvar Ponto</button>
-    </form>
+    <hr />
 
     <div>
       <form action="/logout" method="post">

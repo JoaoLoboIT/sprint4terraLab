@@ -35,6 +35,7 @@ def receber_dados_login():
         else:
             return "<h1>Senha incorreta!</h1><a href='/'>Tente novamente</a>"
   
+
 @app.route("/user")
 def mostrar_pagina_usuario():
     email = request.args.get('email')
@@ -48,20 +49,21 @@ def mostrar_pagina_usuario():
 def logout():
     return render_template('login.html')
 
-@app.route('/adicionar_ponto', methods=['POST'])
-def adicionar_ponto():
-    if 'user_id' not in session:
-        return redirect(url_for('mostrar_pagina_login'))
+@app.route('/user/<email>/adicionar_ponto', methods=['GET', 'POST'])
+def adicionar_ponto(email):
+    usuario = User.query.filter_by(email=email).first()
+    if not usuario:
+        return "Usuário não encontrado!", 404
 
-    lat = request.form['latitude']
-    lon = request.form['longitude']
-    desc = request.form['descricao']
+    if request.method == 'POST':
+        lat = request.form['latitude']
+        lon = request.form['longitude']
+        desc = request.form['descricao']
+        
+        novo_ponto = Ponto(latitude=lat, longitude=lon, descricao=desc, user_id=usuario.id)
+        db.session.add(novo_ponto)
+        db.session.commit()
+        
+        return redirect(url_for('mostrar_pagina_usuario', email=usuario.email, senha=usuario.senha))
     
-    user_id_logado = session['user_id']
-
-    novo_ponto = Ponto(latitude=lat, longitude=lon, descricao=desc, user_id=user_id_logado)
-
-    db.session.add(novo_ponto)
-    db.session.commit()
-
-    return redirect(url_for('mostrar_pagina_usuario'))
+    return render_template('adicionar_ponto.html')

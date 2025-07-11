@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adicionar Novo Ponto</title>
+  </head>
+  <body>
+    <h1>Adicionar Novo Ponto de Interesse</h1>
+
+    <form method="post">
+      <label for="lat">Latitude:</label><br />
+      <input
+        type="text"
+        id="lat"
+        name="latitude"
+        required
+        placeholder="-23.5505"
+      /><br /><br />
+
+      <label for="lon">Longitude:</label><br />
+      <input
+        type="text"
+        id="lon"
+        name="longitude"
+        required
+        placeholder="-46.6333"
+      /><br /><br />
+
+      <label for="desc">Descrição:</label><br />
+      <input
+        type="text"
+        id="desc"
+        name="descricao"
+        placeholder="Ex: Farmácia, Escola..."
+      /><br /><br />
+
+      <button type="submit">Salvar Ponto</button>
+    </form>
+
+    <br />
+    <a href="{{ url_for('mostrar_pagina_usuario') }}"
+      >Voltar para a página de usuário</a
+    >
+  </body>
+</html>
