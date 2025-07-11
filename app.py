@@ -98,3 +98,26 @@ def remover_ponto(ponto_id):
     db.session.delete(ponto_para_remover)
     db.session.commit()
     return redirect(url_for('ver_meus_pontos', email=email_do_autor))
+
+@app.route('/user/<email>/alterar-login', methods=['GET', 'POST'])
+def alterar_login(email):
+    usuario_para_alterar = User.query.filter_by(email=email).first_or_404()
+
+    if request.method == 'POST':
+        novo_email = request.form['email']
+        email_existente = User.query.filter(User.email == novo_email, User.id != usuario_para_alterar.id).first()
+        
+        if email_existente:
+            return "Este email já está em uso por outro usuário!"
+
+        usuario_para_alterar.email = novo_email
+
+        nova_senha = request.form['senha']
+        if nova_senha:
+            usuario_para_alterar.senha = nova_senha
+        
+        db.session.commit()
+
+        return redirect(url_for('mostrar_pagina_usuario', email=usuario_para_alterar.email, senha=usuario_para_alterar.senha))
+
+    return render_template('alterar_login.html', usuario=usuario_para_alterar)
