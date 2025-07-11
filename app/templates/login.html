@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+</head>
+<body>
+    <div class="login-container">
+        <form action="{{ url_for('auth.receber_dados_login') }}" id="login-form" method="post">
+            
+            <label for="email">EMAIL</label><br>
+            <input 
+                type="email" 
+                name="email" 
+                id="email" 
+                required 
+                placeholder="Digite seu email"
+            /><br><br>
+
+            <label for="senha">SENHA</label><br>
+            <input 
+                type="password" 
+                name="senha" 
+                id="senha" 
+                required 
+                placeholder="Digite sua senha"
+            /><br><br>
+
+            <button type="submit" id="btn_login">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                ENTRAR / CADASTRAR
+            </button>
+        </form>
+    </div>
+</body>
+</html>

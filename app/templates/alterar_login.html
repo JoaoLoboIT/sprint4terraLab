@@ -8,7 +8,7 @@
   <body>
     <h2>Alterar Email e Senha</h2>
 
-    <form method="post">
+    <form action="{{ url_for('user.alterar_login') }}" method="post">
       <label for="email">Novo Email:</label><br />
       <input
         type="email"
@@ -33,10 +33,9 @@
     <br />
 
     <p>
-      <a
-        href="{{ url_for('mostrar_pagina_usuario', email=usuario.email, senha=usuario.senha) }}"
-        >Cancelar e Voltar</a
-      >
+      <a href="{{ url_for('user.mostrar_pagina_usuario') }}">
+        Cancelar e Voltar
+      </a>
     </p>
   </body>
 </html>
