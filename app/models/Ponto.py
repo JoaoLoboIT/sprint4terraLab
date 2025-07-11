@@ -1,5 +1,5 @@
 
-from database import db
+from app.database import db
 
 class Ponto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
