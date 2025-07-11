@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Página do Usuário</title>
+  </head>
+  <body>
+    <div>
+      <h1>Bem-vindo, {{ email }}!</h1>
+
+      <p>
+        <a href="{{ url_for('adicionar_ponto', email=email) }}"
+          >Adicionar Novo Ponto</a
+        >
+      </p>
+      <p>
+        <a href="{{ url_for('ver_meus_pontos', email=email) }}"
+          >Ver Meus Pontos</a
+        >
+      </p>
+    </div>
+
+    <hr />
+
+    <div>
+      <a
+        href="{{ url_for('alterar_login', email=email) }}"
+        style="margin-right: 15px"
+        >Alterar Login</a
+      >
+
+      <form
+        action="{{ url_for('logout') }}"
+        method="post"
+        style="display: inline"
+      >
+        <button type="submit">Sair</button>
+      </form>
+      <form
+        action="{{ url_for('remover_usuario', email=email) }}"
+        method="post"
+        style="display: inline"
+      >
+        <button
+          type="submit"
+          onclick="return confirm('ATENÇÃO: Esta ação é permanente e apagará sua conta e todos os seus pontos. Tem certeza que deseja continuar?');"
+        >
+          Excluir Conta
+        </button>
+      </form>
+    </div>
+  </body>
+</html>

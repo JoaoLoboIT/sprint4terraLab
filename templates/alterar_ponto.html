@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alterar Ponto</title>
+  </head>
+  <body>
+    <h1>Alterando o Ponto: {{ ponto.descricao }}</h1>
+
+    <form method="post">
+      <label for="lat">Latitude:</label><br />
+      <input
+        type="text"
+        id="lat"
+        name="latitude"
+        value="{{ ponto.latitude }}"
+        required
+      /><br /><br />
+
+      <label for="lon">Longitude:</label><br />
+      <input
+        type="text"
+        id="lon"
+        name="longitude"
+        value="{{ ponto.longitude }}"
+        required
+      /><br /><br />
+
+      <label for="desc">Descrição:</label><br />
+      <input
+        type="text"
+        id="desc"
+        name="descricao"
+        value="{{ ponto.descricao }}"
+      /><br /><br />
+
+      <button type="submit">Salvar Alterações</button>
+    </form>
+
+    <br />
+    <a href="{{ url_for('ver_meus_pontos', email=ponto.autor.email) }}"
+      >Cancelar e Voltar</a
+    >
+  </body>
+</html>

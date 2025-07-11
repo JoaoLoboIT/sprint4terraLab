@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import os 
-from app.database import db
+from database import db
 from entities.User import User
 from entities.Ponto import Ponto
 
