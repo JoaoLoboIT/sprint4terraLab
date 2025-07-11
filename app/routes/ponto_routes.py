@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from ..models.User import User
 from ..models.Ponto import Ponto
 from ..database import db
+from geoalchemy2.elements import WKTElement 
 
 ponto = Blueprint('ponto', __name__)
 
@@ -9,18 +10,25 @@ ponto = Blueprint('ponto', __name__)
 def adicionar_ponto():
     if 'user_id' not in session:
         return redirect(url_for('auth.mostrar_pagina_login'))
-    
+
     if request.method == 'POST':
+        lat = request.form['latitude']
+        lon = request.form['longitude']
+        desc = request.form['descricao']
+
+        ponto_geometrico = WKTElement(f'POINT({lon} {lat})', srid=4326)
+
         novo_ponto = Ponto(
-            latitude=request.form['latitude'],
-            longitude=request.form['longitude'],
-            descricao=request.form['descricao'],
-            user_id=session['user_id']
+            latitude=lat,
+            longitude=lon,
+            descricao=desc,
+            user_id=session['user_id'],
+            geom=ponto_geometrico  
         )
         db.session.add(novo_ponto)
         db.session.commit()
         return redirect(url_for('user.mostrar_pagina_usuario'))
-    
+
     return render_template('adicionar_ponto.html')
 
 @ponto.route('/meus-pontos')
@@ -35,18 +43,23 @@ def ver_meus_pontos():
 def alterar_ponto(ponto_id):
     if 'user_id' not in session:
         return redirect(url_for('auth.mostrar_pagina_login'))
-        
+
     ponto_para_alterar = Ponto.query.get_or_404(ponto_id)
     if ponto_para_alterar.user_id != session['user_id']:
         return "Acesso negado!", 403
 
     if request.method == 'POST':
-        ponto_para_alterar.latitude = request.form['latitude']
-        ponto_para_alterar.longitude = request.form['longitude']
+        nova_lat = request.form['latitude']
+        nova_lon = request.form['longitude']
+
+        ponto_para_alterar.latitude = nova_lat
+        ponto_para_alterar.longitude = nova_lon
         ponto_para_alterar.descricao = request.form['descricao']
+
+        ponto_para_alterar.geom = WKTElement(f'POINT({nova_lon} {nova_lat})', srid=4326)
         db.session.commit()
         return redirect(url_for('ponto.ver_meus_pontos'))
-        
+
     return render_template('alterar_ponto.html', ponto=ponto_para_alterar)
 
 @ponto.route('/<int:ponto_id>/remover', methods=['POST'])
