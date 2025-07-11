@@ -37,6 +37,18 @@
       >
         <button type="submit">Sair</button>
       </form>
+      <form
+        action="{{ url_for('remover_usuario', email=email) }}"
+        method="post"
+        style="display: inline"
+      >
+        <button
+          type="submit"
+          onclick="return confirm('ATENÇÃO: Esta ação é permanente e apagará sua conta e todos os seus pontos. Tem certeza que deseja continuar?');"
+        >
+          Excluir Conta
+        </button>
+      </form>
     </div>
   </body>
 </html>

@@ -121,3 +121,11 @@ def alterar_login(email):
         return redirect(url_for('mostrar_pagina_usuario', email=usuario_para_alterar.email, senha=usuario_para_alterar.senha))
 
     return render_template('alterar_login.html', usuario=usuario_para_alterar)
+
+@app.route('/user/<email>/remover', methods=['POST'])
+def remover_usuario(email):
+    usuario_para_remover = User.query.filter_by(email=email).first_or_404()
+    Ponto.query.filter_by(user_id=usuario_para_remover.id).delete()
+    db.session.delete(usuario_para_remover)
+    db.session.commit()
+    return redirect(url_for('mostrar_pagina_login'))
