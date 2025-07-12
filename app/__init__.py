@@ -15,10 +15,12 @@ def create_app():
     from .routes.auth_routes import auth
     from .routes.user_routes import user
     from .routes.ponto_routes import ponto
+    from .routes.api_routes import api
 
     app.register_blueprint(auth, url_prefix='/')
     app.register_blueprint(user, url_prefix='/user')
     app.register_blueprint(ponto, url_prefix='/ponto')
+    app.register_blueprint(api, url_prefix='/')
 
     with app.app_context():
         db.create_all()
