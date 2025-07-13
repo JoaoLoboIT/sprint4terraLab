@@ -15,8 +15,9 @@ def criar_ponto(email_usuario, senha_usuario, lat, lon, desc):
         raise PermissionError("Senha incorreta")
 
     ponto_geom = WKTElement(f'POINT({lon} {lat})', srid=4326)
-    
     novo_ponto = Ponto(
+        latitude=lat,
+        longitude=lon,
         descricao=desc,
         user_id=usuario.id,
         geom=ponto_geom
@@ -40,10 +41,12 @@ def alterar_ponto(ponto_id, email_usuario, novos_dados):
     if ponto.autor.email != email_usuario:
         raise PermissionError("Acesso negado. O ponto não pertence a este usuário.")
 
-    ponto.latitude = novos_dados.get('latitude', ponto.latitude)
-    ponto.longitude = novos_dados.get('longitude', ponto.longitude)
+    nova_lat = novos_dados.get('latitude', ponto.latitude)
+    nova_lon = novos_dados.get('longitude', ponto.longitude)
+    
     ponto.descricao = novos_dados.get('descricao', ponto.descricao)
-    ponto.geom = WKTElement(f'POINT({ponto.longitude} {ponto.latitude})', srid=4326)
+    ponto.geom = WKTElement(f'POINT({nova_lon} {nova_lat})', srid=4326)
+    
     db.session.commit()
     return ponto
 

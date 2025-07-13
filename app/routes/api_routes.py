@@ -70,13 +70,23 @@ def remover_usuario_api():
 def adicionar_ponto_api():
     try:
         email = request.args.get('email')
+        senha = request.args.get('senha')
         lat = request.args.get('latitude')
         lon = request.args.get('longitude')
         desc = request.args.get('descricao', "")
-        ponto = ponto_service.criar_ponto(email, lat, lon, desc)
-        return jsonify({"mensagem": "Ponto adicionado com sucesso", "ponto_id": ponto.id}), 201
+        
+        novo_ponto, usuario_do_ponto = ponto_service.criar_ponto(email, senha, lat, lon, desc)
+        
+        return jsonify({
+            "mensagem": "Ponto adicionado com sucesso",
+            "ponto_criado": novo_ponto.to_dict(),
+            "usuario_proprietario": usuario_do_ponto.to_dict()
+        }), 201
+
     except ValueError as e:
         return jsonify({"erro": str(e)}), 404
+    except PermissionError as e:
+        return jsonify({"erro": str(e)}), 403
 
 # Lista os pontos de um usuário
 @api.route('/ListarPontos', methods=['GET'])

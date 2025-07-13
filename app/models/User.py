@@ -6,4 +6,9 @@ class User(db.Model):
     senha = db.Column(db.String(80), nullable=False)
     pontos = db.relationship('Ponto', backref='autor', lazy=True)
 
-    
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "email": self.email,
+            "senha": self.senha
+        }
