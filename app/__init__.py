@@ -11,10 +11,9 @@ def create_app():
     db.init_app(app)
 
     from .routes.api_routes import api
-
     app.register_blueprint(api, url_prefix='/')
 
     with app.app_context():
         db.create_all()
 
-    return app
+    return app  

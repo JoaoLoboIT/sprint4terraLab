@@ -5,3 +5,5 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha = db.Column(db.String(80), nullable=False)
     pontos = db.relationship('Ponto', backref='autor', lazy=True)
+
+    

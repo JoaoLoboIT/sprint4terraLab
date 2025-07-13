@@ -1,155 +1,122 @@
 from flask import Blueprint, request, jsonify
-from ..models.User import User
-from ..models.Ponto import Ponto
-from ..database import db
-from geoalchemy2.elements import WKTElement
+from ..services import user_service, ponto_service
 
 api = Blueprint('api', __name__)
 
-# --- ROTAS DE USUÁRIO ---
-
-# Adicionar um novo usuário 
+# Adiciona um novo usuário
 @api.route('/AdicionarUsuario', methods=['POST'])
 def adicionar_usuario_api():
-    email = request.args.get('email')
-    senha = request.args.get('senha') 
+    try:
+        email = request.args.get('email')
+        senha = request.args.get('senha') 
+        usuario = user_service.criar_usuario(email, senha)
+        return jsonify(usuario.to_dict()), 201
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 409
 
-    if not email or not senha:
-        return jsonify({"erro": "Email e senha são obrigatórios"}), 400 
-
-    if User.query.filter_by(email=email).first():
-        return jsonify({"erro": "Usuário com este email já existe"}), 409
-
-    novo_usuario = User(email=email, senha=senha) 
-    db.session.add(novo_usuario)
-    db.session.commit()
-    
-    return jsonify({"mensagem": "Usuário criado com sucesso", "id": novo_usuario.id}), 201
-
-# Listar todos os usuários
+# Lista todos os usuários
 @api.route('/ListarUsuarios', methods=['GET'])
 def listar_usuarios_api():
-    usuarios = User.query.all()
-    lista_de_usuarios = [{"id": u.id, "email": u.email} for u in usuarios]
-    return jsonify(lista_de_usuarios), 200
+    usuarios = user_service.listar_usuarios()
+    return jsonify([u.to_dict() for u in usuarios]), 200
 
-# Alterar email ou senha de um usuário
+# Altera um usuário
 @api.route('/AlterarUsuario', methods=['POST'])
 def alterar_usuario_api():
-    email_atual = request.args.get('email_atual')
-    if not email_atual:
-        return jsonify({"erro": "O parâmetro 'email_atual' é obrigatório"}), 400
+    try:
+        email_atual = request.args.get('email_atual')
+        senha_atual = request.args.get('senha_atual')
+        novo_email = request.args.get('novo_email')
+        nova_senha = request.args.get('nova_senha')
+        
+        alteracoes_feitas = user_service.alterar_usuario(
+            email_atual=email_atual,
+            senha_atual=senha_atual,
+            novo_email=novo_email,
+            nova_senha=nova_senha
+        )
+        
+        if alteracoes_feitas:
+            return jsonify({
+                "mensagem": "Usuário atualizado com sucesso",
+                "alteracoes": alteracoes_feitas
+            }), 200
+        else:
+            return jsonify({"mensagem": "Nenhum dado novo foi fornecido para alteração."}), 200
 
-    usuario = User.query.filter_by(email=email_atual).first()
-    if not usuario:
-        return jsonify({"erro": "Usuário a ser alterado não encontrado"}), 404
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 404
+    except PermissionError as e:
+        return jsonify({"erro": str(e)}), 403
 
-    novo_email = request.args.get('novo_email')
-    nova_senha = request.args.get('nova_senha')
-
-    if novo_email:
-        usuario.email = novo_email
-    if nova_senha:
-        usuario.senha = nova_senha
-    
-    db.session.commit()
-    return jsonify({"mensagem": "Usuário atualizado com sucesso"}), 200
-
-# Remover um usuário e todos os seus pontos
+# Remove um usuário
 @api.route('/RemoverUsuario', methods=['POST'])
 def remover_usuario_api():
-    email = request.args.get('email')
-    usuario = User.query.filter_by(email=email).first()
+    try:
+        user_id = request.args.get('id')
+        email = request.args.get('email')
+        
+        usuario_removido_info = user_service.remover_usuario(user_id=user_id, email=email)
+        
+        return jsonify({
+            "mensagem": "Usuário removido com sucesso",
+            "usuario_removido": usuario_removido_info
+        }), 200
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 404
 
-    if not usuario:
-        return jsonify({"erro": "Usuário não encontrado"}), 404
-
-    Ponto.query.filter_by(user_id=usuario.id).delete()
-    db.session.delete(usuario)
-    db.session.commit()
-    
-    return jsonify({"mensagem": "Usuário e seus pontos foram removidos com sucesso"}), 200
-
-
-# --- ROTAS DE PONTO ---
-
-# Adicionar um novo ponto geográfico para um usuário
+# Adiciona um novo ponto
 @api.route('/AdicionarPonto', methods=['POST'])
 def adicionar_ponto_api():
-    email = request.args.get('email')
-    lat = request.args.get('latitude')
-    lon = request.args.get('longitude')
-    desc = request.args.get('descricao', "")
+    try:
+        email = request.args.get('email')
+        lat = request.args.get('latitude')
+        lon = request.args.get('longitude')
+        desc = request.args.get('descricao', "")
+        ponto = ponto_service.criar_ponto(email, lat, lon, desc)
+        return jsonify({"mensagem": "Ponto adicionado com sucesso", "ponto_id": ponto.id}), 201
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 404
 
-    if not all([email, lat, lon]):
-        return jsonify({"erro": "Parâmetros 'email', 'latitude' e 'longitude' são obrigatórios"}), 400
-
-    usuario = User.query.filter_by(email=email).first()
-    if not usuario:
-        return jsonify({"erro": "Usuário não encontrado"}), 404
-
-    ponto_geom = WKTElement(f'POINT({lon} {lat})', srid=4326)
-    novo_ponto = Ponto(latitude=lat, longitude=lon, descricao=desc, user_id=usuario.id, geom=ponto_geom)
-    db.session.add(novo_ponto)
-    db.session.commit()
-
-    return jsonify({"mensagem": "Ponto adicionado com sucesso", "ponto_id": novo_ponto.id}), 201
-
-# Listar todos os pontos de um usuário específico
+# Lista os pontos de um usuário
 @api.route('/ListarPontos', methods=['GET'])
 def listar_pontos_api():
-    email = request.args.get('email')
-    if not email:
-        return jsonify({"erro": "Parâmetro 'email' é obrigatório"}), 400
+    try:
+        email = request.args.get('email')
+        pontos = ponto_service.listar_pontos_de_usuario(email)
+        return jsonify([{"id": p.id, "latitude": p.latitude, "longitude": p.longitude, "descricao": p.descricao} for p in pontos]), 200
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 404
 
-    usuario = User.query.filter_by(email=email).first()
-    if not usuario:
-        return jsonify({"erro": "Usuário não encontrado"}), 404
-
-    pontos_lista = [{"id": p.id, "latitude": p.latitude, "longitude": p.longitude, "descricao": p.descricao} for p in usuario.pontos]
-    return jsonify(pontos_lista), 200
-
-# Alterar os dados de um ponto existente
+# Altera um ponto
 @api.route('/AlterarPonto', methods=['POST'])
 def alterar_ponto_api():
-    ponto_id = request.args.get('id')
-    email_usuario = request.args.get('user')
+    try:
+        ponto_id = request.args.get('id')
+        email_usuario = request.args.get('user')
+        novos_dados = {
+            'latitude': request.args.get('latitude'),
+            'longitude': request.args.get('longitude'),
+            'descricao': request.args.get('descricao')
+        }
+        # Filtra para não enviar chaves com valor None
+        novos_dados = {k: v for k, v in novos_dados.items() if v is not None}
+        ponto_service.alterar_ponto(ponto_id, email_usuario, novos_dados)
+        return jsonify({"mensagem": "Ponto atualizado com sucesso"}), 200
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 404
+    except PermissionError as e:
+        return jsonify({"erro": str(e)}), 403
 
-    if not ponto_id or not email_usuario:
-        return jsonify({"erro": "Parâmetros 'id' (do ponto) e 'user' (email do usuário) são obrigatórios"}), 400
-
-    ponto = Ponto.query.get(ponto_id)
-    if not ponto:
-        return jsonify({"erro": "Ponto não encontrado"}), 404
-        
-    if ponto.autor.email != email_usuario:
-        return jsonify({"erro": "Acesso negado. O ponto não pertence a este usuário."}), 403
-
-    ponto.latitude = request.args.get('latitude', ponto.latitude)
-    ponto.longitude = request.args.get('longitude', ponto.longitude)
-    ponto.descricao = request.args.get('descricao', ponto.descricao)
-    ponto.geom = WKTElement(f'POINT({ponto.longitude} {ponto.latitude})', srid=4326)
-
-    db.session.commit()
-    return jsonify({"mensagem": "Ponto atualizado com sucesso"}), 200
-
-# Remover um ponto específico
+# Remove um ponto
 @api.route('/RemoverPonto', methods=['POST'])
 def remover_ponto_api():
-    ponto_id = request.args.get('id')
-    email_usuario = request.args.get('user')
-
-    if not ponto_id or not email_usuario:
-        return jsonify({"erro": "Parâmetros 'id' (do ponto) e 'user' (email do usuário) são obrigatórios"}), 400
-
-    ponto = Ponto.query.get(ponto_id)
-    if not ponto:
-        return jsonify({"erro": "Ponto não encontrado"}), 404
-
-    if ponto.autor.email != email_usuario:
-        return jsonify({"erro": "Acesso negado. O ponto não pertence a este usuário."}), 403
-
-    db.session.delete(ponto)
-    db.session.commit()
-    
-    return jsonify({"mensagem": "Ponto removido com sucesso"}), 200
+    try:
+        ponto_id = request.args.get('id')
+        email_usuario = request.args.get('user')
+        ponto_service.remover_ponto(ponto_id, email_usuario)
+        return jsonify({"mensagem": "Ponto removido com sucesso"}), 200
+    except ValueError as e:
+        return jsonify({"erro": str(e)}), 404
+    except PermissionError as e:
+        return jsonify({"erro": str(e)}), 403
