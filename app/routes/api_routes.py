@@ -15,7 +15,7 @@ def adicionar_usuario_api():
     senha = request.args.get('senha') 
 
     if not email or not senha:
-        return jsonify({"erro": "Email e senha são obrigatórios"}), 400 # 
+        return jsonify({"erro": "Email e senha são obrigatórios"}), 400 
 
     if User.query.filter_by(email=email).first():
         return jsonify({"erro": "Usuário com este email já existe"}), 409
