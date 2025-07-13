@@ -46,7 +46,7 @@ def alterar_ponto(ponto_id, email_usuario, senha_usuario, novos_dados):
     if not ponto_id or not email_usuario or not senha_usuario:
         raise ValueError("ID do ponto, email e senha do usuário são obrigatórios.")
 
-    ponto = Ponto.query.get(ponto_id)
+    ponto = db.session.get(Ponto, int(ponto_id))
     if not ponto:
         raise ValueError("Ponto não encontrado")
 
@@ -84,7 +84,7 @@ def remover_ponto(ponto_id, email_usuario, senha_usuario):
     if not ponto_id or not email_usuario or not senha_usuario:
         raise ValueError("ID do ponto, email e senha são obrigatórios.")
 
-    ponto = Ponto.query.get(ponto_id)
+    ponto = db.session.get(Ponto, int(ponto_id))
     if not ponto:
         raise ValueError("Ponto não encontrado")
 

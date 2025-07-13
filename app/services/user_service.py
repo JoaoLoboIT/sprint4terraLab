@@ -45,7 +45,7 @@ def remover_usuario(user_id=None, email=None):
 
     usuario = None
     if user_id:
-        usuario = User.query.get(user_id)
+       usuario = db.session.get(User, int(user_id))
     elif email:
         usuario = User.query.filter_by(email=email).first()
 
