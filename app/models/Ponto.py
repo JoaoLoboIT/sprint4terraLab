@@ -15,5 +15,6 @@ class Ponto(db.Model):
             "latitude": self.latitude,
             "longitude": self.longitude,
             "descricao": self.descricao,
-            "user_id": self.user_id
+            "user_id": self.user_id,         
+            "autor": self.autor.to_dict()  
         }

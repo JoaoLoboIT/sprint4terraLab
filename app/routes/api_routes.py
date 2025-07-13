@@ -88,13 +88,22 @@ def adicionar_ponto_api():
     except PermissionError as e:
         return jsonify({"erro": str(e)}), 403
 
+# Listar todos os pontos de todos os usuários
+@api.route('/ListarTodosPontos', methods=['GET'])
+def listar_todos_pontos_api():
+    todos_os_pontos = ponto_service.listar_todos_os_pontos()
+    return jsonify([p.to_dict() for p in todos_os_pontos]), 200
+
 # Lista os pontos de um usuário
 @api.route('/ListarPontos', methods=['GET'])
 def listar_pontos_api():
     try:
+        user_id = request.args.get('id')
         email = request.args.get('email')
-        pontos = ponto_service.listar_pontos_de_usuario(email)
-        return jsonify([{"id": p.id, "latitude": p.latitude, "longitude": p.longitude, "descricao": p.descricao} for p in pontos]), 200
+        
+        pontos = ponto_service.listar_pontos_de_usuario(user_id=user_id, email=email)
+        
+        return jsonify([p.to_dict() for p in pontos]), 200
     except ValueError as e:
         return jsonify({"erro": str(e)}), 404
 
@@ -103,16 +112,30 @@ def listar_pontos_api():
 def alterar_ponto_api():
     try:
         ponto_id = request.args.get('id')
-        email_usuario = request.args.get('user')
+        email_usuario = request.args.get('email')
+        senha_usuario = request.args.get('senha')
+        
         novos_dados = {
             'latitude': request.args.get('latitude'),
             'longitude': request.args.get('longitude'),
             'descricao': request.args.get('descricao')
         }
-        # Filtra para não enviar chaves com valor None
-        novos_dados = {k: v for k, v in novos_dados.items() if v is not None}
-        ponto_service.alterar_ponto(ponto_id, email_usuario, novos_dados)
-        return jsonify({"mensagem": "Ponto atualizado com sucesso"}), 200
+        
+        alteracoes_feitas = ponto_service.alterar_ponto(
+            ponto_id, 
+            email_usuario, 
+            senha_usuario, 
+            novos_dados
+        )
+
+        if alteracoes_feitas:
+            return jsonify({
+                "mensagem": "Ponto atualizado com sucesso",
+                "alteracoes": alteracoes_feitas
+            }), 200
+        else:
+            return jsonify({"mensagem": "Nenhum dado novo foi fornecido para alteração."}), 200
+
     except ValueError as e:
         return jsonify({"erro": str(e)}), 404
     except PermissionError as e:
@@ -123,9 +146,16 @@ def alterar_ponto_api():
 def remover_ponto_api():
     try:
         ponto_id = request.args.get('id')
-        email_usuario = request.args.get('user')
-        ponto_service.remover_ponto(ponto_id, email_usuario)
-        return jsonify({"mensagem": "Ponto removido com sucesso"}), 200
+        email_usuario = request.args.get('email')
+        senha_usuario = request.args.get('senha')
+        
+        ponto_removido_info, autor_info = ponto_service.remover_ponto(ponto_id, email_usuario, senha_usuario)
+        
+        return jsonify({
+            "mensagem": "Ponto removido com sucesso",
+            "ponto_removido": ponto_removido_info,
+            "proprietario_do_ponto": autor_info
+        }), 200
     except ValueError as e:
         return jsonify({"erro": str(e)}), 404
     except PermissionError as e:
