@@ -1,7 +1,3 @@
-from app.models.User import User
-from app.models.Ponto import Ponto
-from app.database import db
-
 # Testa se a lista de usuários começa vazia
 def test_listar_usuarios_vazio(test_client):
     response = test_client.get('/ListarUsuarios')
