@@ -4,7 +4,12 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha = db.Column(db.String(80), nullable=False)
-    pontos = db.relationship('Ponto', backref='autor', lazy=True)
+    pontos = db.relationship(
+        'Ponto', 
+        backref='autor', 
+        lazy=True, 
+        cascade="all, delete-orphan"
+    )
 
     def to_dict(self):
         return {
